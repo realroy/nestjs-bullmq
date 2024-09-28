@@ -7,7 +7,10 @@ import { BASIC_QUEUE_1_NAME } from './basic-1.constant';
 import { GreetService } from './basic-1.service';
 
 @Injectable()
-@Processor(BASIC_QUEUE_1_NAME)
+@Processor(BASIC_QUEUE_1_NAME, {
+  concurrency: 10,
+  useWorkerThreads: true,
+})
 export class Basic1Consumer extends WorkerHost {
   constructor(private readonly greetService: GreetService) {
     super();
@@ -17,14 +20,15 @@ export class Basic1Consumer extends WorkerHost {
     switch (job.name) {
       case JOB_1_NAME:
         try {
-          this.greetService.call(job.data);
+          await this.greetService.call(job.data);
           return;
         } catch (error) {
           job.log(JOB_1_NAME + ' failed: ' + error);
           return;
         }
       case JOB_2_NAME:
-        return job.log('start job 2');
+        job.log('start job 2');
+        return;
       default:
         return job.log('unknown job');
     }

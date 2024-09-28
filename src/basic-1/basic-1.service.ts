@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { random, sleep } from 'src/app.util';
 
 export type GreetServiceInput = {
   name: string;
@@ -6,7 +7,8 @@ export type GreetServiceInput = {
 
 @Injectable()
 export class GreetService {
-  call(input: GreetServiceInput) {
+  async call(input: GreetServiceInput) {
+    await sleep(random(5, 10) * 1000);
     return `Hello ${input.name}` as const;
   }
 }
