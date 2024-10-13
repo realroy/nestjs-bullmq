@@ -3,18 +3,16 @@ import {
   SharedBullConfigurationFactory,
 } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+// import { ConfigService } from '@nestjs/config';
+import { RedisService } from 'src/redis';
 
 @Injectable()
 export class BullMQConfig implements SharedBullConfigurationFactory {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly redisService: RedisService) {}
 
   createSharedConfiguration(): BullRootModuleOptions {
     return {
-      connection: {
-        host: this.configService.get('REDIS_HOST'),
-        port: this.configService.get('REDIS_PORT'),
-      },
+      connection: this.redisService.getConnection(),
     };
   }
 }

@@ -1,14 +1,18 @@
-import { Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Logger,
+  Module,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ExpressAdapter } from '@bull-board/express';
-import { BullBoardModule } from '@bull-board/nestjs';
+
+import { BullMQModule } from './bullmq';
+import { Basic1Module } from './basic-1';
+import { RedisModule } from './redis';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppConfig, validate } from './app.config';
-
-import { BullMQModule } from './bullmq/bullmq.module';
-import { Basic1Module } from './basic-1/basic-1.module';
 
 @Module({
   imports: [
@@ -17,21 +21,16 @@ import { Basic1Module } from './basic-1/basic-1.module';
       expandVariables: true,
       validate,
     }),
+    RedisModule,
     BullMQModule,
-    BullBoardModule.forRootAsync({
-      useFactory() {
-        return {
-          route: '/queues',
-          adapter: ExpressAdapter,
-        };
-      },
-    }),
     Basic1Module,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements OnApplicationBootstrap {
+export class AppModule
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private logger: Logger;
 
   constructor(private readonly configService: ConfigService<AppConfig>) {
@@ -43,5 +42,9 @@ export class AppModule implements OnApplicationBootstrap {
       this.configService?.['internalConfig']?.['_PROCESS_ENV_VALIDATED'],
     );
     this.logger.log(config);
+  }
+
+  onApplicationShutdown(signal?: string) {
+    this.logger.log(`Shutting down on signal ${signal}`);
   }
 }

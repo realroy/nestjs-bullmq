@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Job, Worker } from 'bullmq';
+import { join } from 'node:path';
 
 import { JOB_1_NAME, JOB_2_NAME } from './basic-1.job';
 import { BASIC_QUEUE_1_NAME } from './basic-1.constant';
@@ -9,7 +10,6 @@ import { GreetService } from './basic-1.service';
 @Injectable()
 @Processor(BASIC_QUEUE_1_NAME, {
   concurrency: 10,
-  useWorkerThreads: true,
 })
 export class Basic1Consumer extends WorkerHost {
   constructor(private readonly greetService: GreetService) {
@@ -28,6 +28,12 @@ export class Basic1Consumer extends WorkerHost {
         }
       case JOB_2_NAME:
         job.log('start job 2');
+        new Worker(BASIC_QUEUE_1_NAME, join(__dirname, 'basic-1.worker.js'), {
+          connection: {
+            host: 'localhost',
+            port: 6379,
+          },
+        });
         return;
       default:
         return job.log('unknown job');

@@ -8,6 +8,7 @@ import { AppConfig } from './app.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
 
   app.useLogger(['log', 'error', 'warn', 'debug']);
   app.useGlobalPipes(

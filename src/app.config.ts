@@ -27,17 +27,15 @@ export function validate(config: unknown) {
   return validatedConfig;
 }
 
-export enum NodeEnvironment {
-  Development = 'development',
-  Production = 'production',
-  Test = 'test',
-}
+export const NODE_ENVS = ['development', 'production', 'test'] as const;
+
+export type NodeEnvironment = (typeof NODE_ENVS)[number];
 
 @Exclude()
 export class EnviromentVariables {
   @Expose()
-  @IsEnum(NodeEnvironment)
-  NODE_ENV: NodeEnvironment = NodeEnvironment.Development;
+  @IsEnum(NODE_ENVS)
+  NODE_ENV: NodeEnvironment = 'development';
 
   @Expose()
   @IsNumber()

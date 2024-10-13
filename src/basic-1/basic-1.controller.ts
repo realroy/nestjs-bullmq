@@ -3,8 +3,8 @@ import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { JOB_1_NAME } from './basic-1.job';
-import { BASIC_QUEUE_1_NAME } from './basic-1.constant';
+import { JOB_1_NAME, JOB_2_NAME } from './basic-1.job';
+import { BASIC_QUEUE_1_NAME, BASIC_QUEUE_2_NAME } from './basic-1.constant';
 import { CreateJobBulkDto, CreateJobDto, GreetDto } from './basic-1.dto';
 import { GreetService } from './basic-1.service';
 
@@ -14,6 +14,7 @@ export class Basic1Controller {
   constructor(
     private readonly greetService: GreetService,
     @InjectQueue(BASIC_QUEUE_1_NAME) private readonly basic1Queue: Queue,
+    @InjectQueue(BASIC_QUEUE_2_NAME) private readonly basic2Queue: Queue,
   ) {}
 
   @ApiOperation({ summary: 'process without job scheduling' })
@@ -24,8 +25,8 @@ export class Basic1Controller {
 
   @ApiOperation({ summary: 'process with job scheduling' })
   @Post('/job')
-  async processJob(@Query() query: CreateJobDto) {
-    return await this.basic1Queue.add(JOB_1_NAME, query);
+  async processJob(@Body() body: CreateJobDto) {
+    return await this.basic1Queue.add(JOB_1_NAME, body);
   }
 
   @ApiOperation({ summary: 'process bulk job' })
@@ -37,5 +38,11 @@ export class Basic1Controller {
         data,
       })),
     );
+  }
+
+  @ApiOperation({ summary: 'process job with worker' })
+  @Post('/job-worker')
+  async processJobWorker(@Body() body: CreateJobDto) {
+    return await this.basic2Queue.add(JOB_2_NAME, body);
   }
 }
